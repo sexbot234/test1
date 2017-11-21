@@ -1,6 +1,6 @@
 # DB3 - Delta Bot 3 [![Build Status](https://travis-ci.org/MystK/delta-bot-three.svg?branch=master)](https://travis-ci.org/MystK/delta-bot-three)
 ## Summary
-The third rewrite of delta bot, created for [reddit.com/r/changemyview](https://www.reddit.com/r/changemyview). This bot will be written in NodeJS.
+The third rewrite of DeltaBot, created for [reddit.com/r/changemyview](https://www.reddit.com/r/changemyview). This bot will run CMV's [delta system](https://www.reddit.com/r/changemyview/wiki/deltasystem), and is written in NodeJS.
 
 ## Contributing
 * Any contributions are much appreciated.
