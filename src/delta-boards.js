@@ -32,7 +32,7 @@ class DeltaBoards {
 
     // start the scheduled time job
     this.updateDailyWeeklyMonthlyDeltaboards()
-    this.updateYearlyDeltaboard()
+    // this.updateYearlyDeltaboard()
   }
 
   async updateDailyWeeklyMonthlyDeltaboards() {
@@ -167,15 +167,15 @@ ${this.mapDeltaboardDataToTable(newHiddenParams.weekly)}
 ${this.mapDeltaboardDataToTable(newHiddenParams.monthly)}
 | |${newHiddenParams.updateTimes.monthly}| |
 
-## Yearly
+${stringifiedNewHiddenParams}
+`
+
+/* ## Yearly
 
 | Rank | Username | Deltas |
 | :------: | :------: | :------: |
 ${this.mapDeltaboardDataToTable(newHiddenParams.yearly)}
-| |${newHiddenParams.updateTimes.yearly}| |
-
-${stringifiedNewHiddenParams}
-`
+| |${newHiddenParams.updateTimes.yearly}| | */
 
     // define update wiki parameters
     const updateWikiQuery = {
