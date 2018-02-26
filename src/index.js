@@ -439,7 +439,7 @@ const {
     if (!wasDeltaMadeByAuthor(comment)) {
       return true
     }
-    const wikiPostObject = await findDeltaLogPost.get(linkID)
+    const wikiPostObject = await findDeltaLogPost(linkID)
     if (wikiPostObject == null) {
       console.error(`Unable to find delta log post for thread ${linkID} - should have been made by findOrMakeDeltaLogPost! Skipping sticky comment creation`)
       return true
