@@ -29,11 +29,7 @@ const {
 
   const i18n = require(path.resolve('i18n'))
 
-  const isDebug = _.some(process.argv, arg => arg === '--db3-debug')
   const deltaLogEnabled = _.some(process.argv, arg => arg === '--enable-delta-log')
-  if (isDebug) {
-    console.log('server.js called!  running in debug mode')
-  }
 
   const last = []
   setInterval(() => {
@@ -69,7 +65,7 @@ const {
   const deltaLogSubreddit = configJson.deltaLogSubreddit
   const subreddit = configJson.subreddit
   const botUsername = credentials.username
-  const flags = { isDebug, deltaLogEnabled }
+  const flags = { deltaLogEnabled }
   const reddit = new Reddit(credentials, packageJson.version, 'main', flags)
 
   const getNewComments = async (recursiveList) => {

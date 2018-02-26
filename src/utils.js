@@ -29,7 +29,6 @@ const checkCommentForDelta = (comment) => {
 }
 
 const locale = 'en-us'
-const isDebug = _.some(process.argv, arg => arg === '--db3-debug')
 const i18n = require(path.resolve('i18n'))
 const bypassOPCheck = _.some(process.argv, arg => arg === '--bypass-op-check')
 const generateDeltaBotCommentFromDeltaComment = async ({
@@ -45,7 +44,7 @@ const generateDeltaBotCommentFromDeltaComment = async ({
     parent_id: parentID,
   } = comment
   const author = comment.author.name || comment.author
-  if (isDebug) console.log(author, body, linkID, parentID)
+  console.log(author, body, linkID, parentID)
   const hiddenParams = {
     comment: i18n[locale].hiddenParamsComment,
     issues: {},

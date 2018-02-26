@@ -6,8 +6,8 @@
   "scripts": {
     "start": "nodemon ./src/index.js -x node -w ./i18n -w ./src -- --inspect --enable-delta-log",
     "startProduction": "forever cleanlogs && forever start --uid \"production\" -o out.log -e err.log ./src/index.js --enable-delta-log",
-    "start-debug": "nodemon ./src/index.js -x node -w ./i18n -w ./src -- --db3-debug --bypass-op-check --enable-delta-log",
-    "start-debug-inspector": "node-debug ./src/index.js --db3-debug --bypass-op-check --enable-delta-log",
+    "start-debug": "nodemon ./src/index.js -x node -w ./i18n -w ./src -- --bypass-op-check --enable-delta-log",
+    "start-debug-inspector": "node-debug ./src/index.js --bypass-op-check --enable-delta-log",
     "test": "npm run eslint && jest",
     "eslint": "eslint ./src",
     "eslint-fix": "eslint ./src --fix",

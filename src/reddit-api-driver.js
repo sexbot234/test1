@@ -9,10 +9,9 @@ const path = require('path')
 fs.readFile = promisify(fs.readFile)
 
 module.exports = class RedditAPIDriver {
-  constructor(credentials, version, sessionName, flags) {
+  constructor(credentials, version, sessionName) {
     this.sessionName = sessionName
     this.credentials = credentials
-    this.flags = flags
     this.headers = {}
     this.baseURL = 'https://oauth.reddit.com'
     this.version = version
@@ -57,7 +56,7 @@ module.exports = class RedditAPIDriver {
   }
   async query(params, noOauth, wiki, count = 0) {
     const paramsReadable = _.isString(params) ? `GET ${params}` : `${params.method} ${params.URL}`
-    const debugInfo = this.flags.isDebug ? ` for request (${paramsReadable})` : ''
+    const debugInfo = ` for request (${paramsReadable})`
     try {
       return await new Promise(async (res, rej) => {
         let gotResponse
@@ -112,17 +111,13 @@ module.exports = class RedditAPIDriver {
               ]
             )
             if (Object.keys(headers).length) console.log(rateHeaders)
-            if (this.flags.isDebug) {
-              console.log('SUCCESS (200)'.green, `${debugInfo}`)
-            }
+            console.log('SUCCESS (200)'.green, `${debugInfo}`)
           } catch (error) {
             retry(res, rej)
           }
         } else if (statusCode === 401 || statusCode === 403) {
           console.log('75 R_API (status was 401 or 403)')
-          if (this.flags.isDebug) {
-            console.log(_.pick(response, 'url', 'status', 'statusText'))
-          }
+          console.log(_.pick(response, 'url', 'status', 'statusText'))
           await this.connect({ type: 'GET_NEW_SESSION' })
           retry(res, rej)
         } else if (statusCode === 404) {
