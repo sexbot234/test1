@@ -415,11 +415,14 @@ const {
     return commentFullName
   }
 
-  const findDeltaLogPost = async linkID =>
-    deltaLogDB.get(linkID).then(
-      _.identity,
-      err => console.error('Failed to find delta log post', err)
-    )
+  const findDeltaLogPost = async (linkID) => {
+    try {
+      return await _.identity(deltaLogDB.get(linkID))
+    } catch (err) {
+      console.error('Failed to find delta log post', err)
+      return null
+    }
+  }
 
   const wasDeltaMadeByAuthor = comment => comment.link_author === getCommentAuthor(comment)
 
