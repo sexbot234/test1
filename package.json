@@ -1,6 +1,6 @@
 {
   "name": "delta-bot-three",
-  "version": "5.1.0",
+  "version": "5.2.0",
   "description": "The third rewrite of delta bot",
   "main": "dist/index.js",
   "scripts": {
