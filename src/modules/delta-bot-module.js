@@ -1,12 +1,11 @@
 const fsp = require('fs-promise')
-const path = require('path')
 const Snoowrap = require('snoowrap')
 const _ = require('lodash')
 const { getUserAgent } = require('./../utils')
 
 class DeltaBotModule {
   constructor(fileName, legacyRedditApi, stateSchema) {
-    const configPath = path.join(process.cwd(), 'config/config.json')
+    const configPath = `${__dirname}/../../config/config.json`
     this.config = fsp.readJsonSync(configPath)
     this.botUserName = 'Not set yet!'
     this.subreddit = this.config.subreddit
@@ -15,26 +14,15 @@ class DeltaBotModule {
     this.reddit = 'Not connected yet!'
     this.subredditDriver = 'Not connected yet!'
     this.legacyRedditApi = legacyRedditApi
-    this.statePath = path.join(
-      process.cwd(),
-      'config/state',
-      `${this.fileName}-state.json`
-    )
+    this.statePath = `${__dirname}/../../config/state/${this.fileName}-state.json`
     this.stateSchema = stateSchema
   }
   getAndSetCredentials() {
     try {
-      const moduleCredentialsPath = path.join(
-        process.cwd(),
-        'config/credentials',
-        `${this.fileName}.json`
-      )
+      const moduleCredentialsPath = `${__dirname}/../../config/credentials${this.fileName}.json`
       return fsp.readJsonSync(moduleCredentialsPath)
     } catch (expectedError) {
-      const defaultCredentialsPath = path.join(
-        process.cwd(),
-        'config/credentials/credentials.json'
-      )
+      const defaultCredentialsPath = `${__dirname}/../../config/credentials/credentials.json`
       return fsp.readJsonSync(defaultCredentialsPath)
     }
   }
@@ -56,7 +44,7 @@ class DeltaBotModule {
         })
       }
     } catch (err) {
-      console.log(err)
+      console.log(`No state.json file found for ${this.fileName} module. Going to create one!`)
       this.stateObj = this.stateSchema || {}
       fsp.writeJsonSync(this.statePath, this.stateObj)
     }

@@ -2,7 +2,7 @@ const _ = require('lodash')
 
 const {
   checkCommentForDelta,
-  generateDeltaBotCommentFromDeltaComment,
+  generateHiddenParamsFromDeltaComment,
   getDeltaBotReply,
   parseHiddenParams,
 } = require('./../utils')
@@ -23,25 +23,37 @@ class CheckEditedComments extends DeltaBotModule {
       .getEdited({ only: 'comments' })
     for (const comment of editedComments) {
       if (checkCommentForDelta(comment)) {
-        console.log('There is a delta in here! Check if Delta Bot replied!')
+        console.log(`There is a delta in comment: ${comment.name}! Check if Delta Bot replied!`)
+
+        // first use snoowrap and grab the comment
         const commentWithReplies = await this.reddit
           .getComment(comment.id)
           .fetch()
+
+          // then fetch ALL of the comment replies
         const commentReplies = await commentWithReplies.replies.fetchAll({})
+
+        // grab the deltabot reply so see if it's been worked on
         const dbReply = getDeltaBotReply(this.botUsername, commentReplies)
         if (!dbReply) await verifyThenAward(comment)
+        // deltabot has already replied
+        // check if the deltabot comment needs to change from when deltabot
+        // originally commented by comparing the hidden params
         else {
           const oldHiddenParems = parseHiddenParams(dbReply.body)
           const oldIssueCount = Object.keys(oldHiddenParems.issues).length
-          const {
-            hiddenParams: newHiddenParams,
-          } = await generateDeltaBotCommentFromDeltaComment({
+
+          // only worry about unsuccessful delta comment
+          if (oldIssueCount === 0) continue
+          const newHiddenParams = await generateHiddenParamsFromDeltaComment({
             botUsername: this.botUsername,
-            subreddit: this.subreddit,
-            reddit: this.legacyRedditApi,
-            comment,
+            reddit: this.reddit,
+            comment: commentWithReplies,
           })
-          if (oldIssueCount > 0 && !_.isEqual(newHiddenParams, oldHiddenParems)) {
+
+          // omit checking hiddenParams.parentUserName because it could have turned into [deleted]
+          // omit checkinghiddenParams.comment because it doesn't matter
+          if (!_.isEqual(newHiddenParams.issues, oldHiddenParems.issues)) {
             await this.reddit
               .getComment(dbReply.id)
               .delete()

@@ -1,4 +1,3 @@
-const path = require('path')
 const _ = require('lodash')
 const moment = require('moment')
 const { AllHtmlEntities: entities } = require('html-entities')
@@ -29,9 +28,55 @@ const checkCommentForDelta = (comment) => {
 }
 
 const locale = 'en-us'
-const i18n = require(path.resolve('i18n'))
+const i18n = require('./../i18n')
+
 const bypassOPCheck = _.some(process.argv, arg => arg === '--bypass-op-check')
-const generateDeltaBotCommentFromDeltaComment = async ({
+
+/**
+ * generated new hidden parameters that usually live in the deltabot
+ * comment from a user's delta comment ID
+ * @param {object} params
+ * @param {Comment} params.comment - snoowrap comment class
+ * @param {Snoowrap} params.reddit - snoowrap reddit driver
+ * @returns {object} - hidden parameters object
+ */
+const generateHiddenParamsFromDeltaComment = async ({ comment, reddit, botUsername }) => {
+  // prepare the hidden params object
+  const hiddenParams = {
+    comment: i18n[locale].hiddenParamsComment,
+    issues: {},
+    parentUserName: null,
+  }
+  // define issues to avoid writing hiddenParams.issues all the time
+  const issues = hiddenParams.issues
+
+  // fill out parentUserName of hiddenParams
+  // that is the username that the delta comment is replying to
+  // first grab the parent comment
+  const parentComment = await reddit.getComment(comment.parent_id).fetch()
+  // now populate hiddenParems.parentUsername
+  hiddenParams.parentUserName = parentComment.author.name
+
+  // get the submission thread
+  const submission = await reddit.getSubmission(comment.link_id).fetch()
+
+  // if the author of the comment being deltaed is OP/submission author
+  // bypassOPCheck is used for debugging
+  if (parentComment.author.name === submission.author.name && bypassOPCheck === false) issues.op = 1
+  // if the comment being deltaed is the bot
+  if (parentComment.author.name === botUsername) issues.db3 = 1
+  // if the comment being deltaed and the delta comment author are the same
+  // bypassOPCheck is used for debugging
+  if (parentComment.author.name === comment.author.name && bypassOPCheck === false) issues.self = 1
+  // if there are no issues yet, then check for comment length
+  // checking for this last allows it to be either the issues above or this one
+  if (Object.keys(issues).length === 0 && comment.body.length < 50) issues.littleText = 1
+
+  console.log(`Hidden parameters generated for comment ID ${comment.name}`)
+  return hiddenParams
+}
+
+const generateDeltaBotCommentFromDeltaCommentDEPRECATED = async ({
   comment,
   botUsername,
   reddit,
@@ -119,7 +164,8 @@ const generateDeltaBotCommentFromDeltaComment = async ({
   return { issueCount, parentThing, query, hiddenParams }
 }
 
-const packageJson = require(path.resolve('./package.json'))
+const packageJson = require('./../package.json')
+
 const getUserAgent = moduleName => (
   `DB3/v${packageJson.version} ${moduleName ? `- ${moduleName} Module ` : ''}- by MystK`
 )
@@ -223,23 +269,31 @@ const getNewCommentsBeforeCommentId = async ({
   commentId,
   subredditDriver,
 }) => {
+  console.log(`Getting new comments before comment ID, ${commentId}`)
   const commentsToReturn = []
   let commentIdToUse
   let continuousComments
   let continueOn = true
   while (continueOn) {
-    console.log(`In loop for ${commentId}`)
     commentIdToUse = _.get(continuousComments, '[0].name') || commentId
-    continuousComments = await subredditDriver.getNewComments({ before: commentIdToUse })
+    continuousComments = await subredditDriver.getNewComments({
+      limit: 100,
+      before: commentIdToUse,
+    })
     if (continuousComments.length) {
       _.forEachRight(continuousComments, (comment) => {
         const { created_utc: createdUtc } = comment
+
+        // if atLeastMinutesOld is passed, get comments that are only X minutes old
+        // this specific feature is used for a trailing module double checking comments
+        // so it never reaches the newest comments
         if (moment().diff(createdUtc * 1000, 'minutes') >= atLeastMinutesOld) {
           commentsToReturn.push(comment)
         } else continueOn = false
       })
     } else continueOn = false
   }
+  console.log(`Found ${commentsToReturn.length} for ${commentId}`)
   return commentsToReturn
 }
 
@@ -253,7 +307,8 @@ module.exports = {
   escapeUnderscore,
   getCommentAuthor,
   checkCommentForDelta,
-  generateDeltaBotCommentFromDeltaComment,
+  generateDeltaBotCommentFromDeltaCommentDEPRECATED,
+  generateHiddenParamsFromDeltaComment,
   getUserAgent,
   getDeltaBotReply,
   getParsedDate,

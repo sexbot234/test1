@@ -11,10 +11,8 @@ const unesc = require('unescape')
 const DeltaBoards = require('./delta-boards')
 const { deltaLogDB } = require('./db')
 const Reddit = require('./reddit-api-driver')
-const upgradeConfig = require('./upgrade-config')
 const {
-  checkCommentForDelta,
-  generateDeltaBotCommentFromDeltaComment,
+  generateDeltaBotCommentFromDeltaCommentDEPRECATED,
   getDeltaBotReply,
   getCommentAuthor,
   getWikiContent,
@@ -25,8 +23,6 @@ const {
 } = require('./utils');
 
 (async () => {
-  await upgradeConfig()
-
   const i18n = require(path.resolve('i18n'))
 
   const deltaLogEnabled = _.some(process.argv, arg => arg === '--enable-delta-log')
@@ -43,20 +39,6 @@ const {
   fs.writeFile = promisify(fs.writeFile)
   const credentials = require(path.resolve('./config/credentials/credentials.json'))
 
-  let state
-  let lastParsedCommentIDs
-  let lastParsedCommentID
-  try {
-    state = require(path.resolve('./config/state/state.json'))
-
-    lastParsedCommentIDs = state.lastParsedCommentIDs
-    lastParsedCommentID = lastParsedCommentIDs[0]
-  } catch (err) {
-    console.log('No or corrupted state.json file! Starting from no state!'.gray)
-    state = {}
-    lastParsedCommentIDs = []
-    lastParsedCommentID = null
-  }
   const packageJson = require(path.resolve('./package.json'))
 
   const configJsonPath = path.join(process.cwd(), 'config/config.json')
@@ -67,76 +49,6 @@ const {
   const botUsername = credentials.username
   const flags = { deltaLogEnabled }
   const reddit = new Reddit(credentials, packageJson.version, 'main', flags)
-
-  const getNewComments = async (recursiveList) => {
-    console.log('Making comments call!')
-    const dirtyRecursiveList = recursiveList || []
-    let query = {}
-    if (lastParsedCommentID) {
-      query = { after: lastParsedCommentID }
-      let response = await reddit.query(`/r/${subreddit}/comments.json?${stringify(query)}`, true)
-      if (response.error) throw Error(response.error)
-      while (!response.data.children.length && lastParsedCommentIDs.length) {
-        lastParsedCommentID = lastParsedCommentIDs.shift()
-        query = { after: lastParsedCommentID }
-        /* eslint-disable no-await-in-loop */
-        response = await reddit.query(`/r/${subreddit}/comments.json?${stringify(query)}`, true)
-        /* eslint-enable no-await-in-loop */
-        if (response.error) throw Error(response.error)
-      }
-      lastParsedCommentIDs = []
-      lastParsedCommentIDs.push(lastParsedCommentID)
-      for (let i = 0; i < 4; i += 1) {
-        lastParsedCommentIDs.push(_.get(response, ['data', 'children', i, 'data', 'name']))
-      }
-      await fs.writeFile(
-        './config/state/state.json', JSON.stringify({ lastParsedCommentIDs }, null, 2)
-      )
-      if (lastParsedCommentIDs.length === 0) {
-        lastParsedCommentID = null
-        await fs.writeFile('./config/state/state.json', '{}')
-
-        const stateResponse = await reddit.query(`/r/${subreddit}/comments.json`, true)
-        if (stateResponse.error) throw Error(stateResponse.error)
-        for (let i = 0; i < 5; i += 1) {
-          lastParsedCommentIDs.push(_.get(stateResponse, ['data', 'children', i, 'data', 'name']))
-        }
-        await fs.writeFile(
-          './config/state/state.json', JSON.stringify({ lastParsedCommentIDs }, null, 2)
-        )
-        lastParsedCommentID = lastParsedCommentIDs[0]
-      }
-    }
-    query = { before: lastParsedCommentID }
-    let response = await reddit.query(`/r/${subreddit}/comments.json?${stringify(query)}`, true)
-    if (response.error) throw Error(response.error)
-    const newRecursiveList = dirtyRecursiveList.concat(response.data.children)
-    const commentEntriesLength = response.data.children.length
-    if (commentEntriesLength) {
-      lastParsedCommentID = response.data.children[0].data.name
-      lastParsedCommentIDs = []
-      query = { after: lastParsedCommentID }
-      response = await reddit.query(`/r/${subreddit}/comments.json?${stringify(query)}`, true)
-      if (response.error) throw Error(response.error)
-      lastParsedCommentIDs.push(lastParsedCommentID)
-      for (let i = 0; i < 4; i += 1) {
-        lastParsedCommentIDs.push(_.get(response, ['data', 'children', i, 'data', 'name']))
-      }
-      await fs.writeFile(
-        './config/state/state.json', JSON.stringify({ lastParsedCommentIDs }, null, 2)
-      )
-    }
-    switch (true) {
-      case (commentEntriesLength === 25):
-        return getNewComments(newRecursiveList)
-      case (commentEntriesLength !== 25):
-      case (commentEntriesLength === 0):
-        console.log('Done making comments call!')
-        return newRecursiveList
-      default :
-        return false
-    }
-  }
 
   const addOrRemoveDeltaToOrFromWiki = async ({
     createdUTC,
@@ -674,10 +586,15 @@ const {
         parentThing,
         query,
         hiddenParams,
-      } = await generateDeltaBotCommentFromDeltaComment({ comment, botUsername, reddit, subreddit })
+      } = await generateDeltaBotCommentFromDeltaCommentDEPRECATED({
+        comment,
+        botUsername,
+        reddit,
+        subreddit,
+      })
       if (!query) return true
       if (issueCount === 0) {
-        console.log('THIS ONE IS GOOD. AWARD IT')
+        console.log(`${comment.name} delta comment is good! Award it!`)
         // Modify wiki for the user receiving the delta
         const flairCount = await addOrRemoveDeltaToOrFromWiki(
           {
@@ -724,51 +641,6 @@ const {
       console.log(err)
     }
     return true
-  }
-
-  const checkForDeltas = async () => {
-    last[0] = Date.now()
-    try {
-      const comments = await getNewComments()
-      _.each(comments, async (entry, index) => {
-        const {
-          link_title,
-          link_id,
-          author, body,
-          body_html,
-          edited,
-          parent_id,
-          id,
-          name,
-          author_flair_text,
-          link_url,
-          link_author,
-          created_utc,
-          created,
-        } = entry.data
-        comments[index] = {
-          link_title,
-          link_id,
-          link_author,
-          author,
-          body,
-          body_html,
-          edited,
-          parent_id,
-          id,
-          name,
-          author_flair_text,
-          link_url,
-          created_utc,
-          created,
-        }
-        if (checkCommentForDelta(comments[index])) await exports.verifyThenAward(comments[index])
-      })
-    } catch (err) {
-      console.log('Error!'.red)
-      console.error(err)
-    }
-    setTimeout(checkForDeltas, 30000)
   }
 
   const checkMessagesforDeltas = async () => {
@@ -1029,33 +901,24 @@ const {
   }
 
   try {
-    await reddit.connect()
+    // await reddit.connect()
     console.log('Start loading modules!'.bgGreen.cyan)
+
+    // begin loading modules
     const Modules = require('./modules')
-    await _.reduce(Modules, async (result, Module, name) => {
+    await _.each(Modules, async (Module, name) => {
+      if (name !== 'checkComment') return
       try {
         console.log(`Trying to load ${name} module!`.bgCyan)
         const module = new Module(reddit)
-        result[name] = module
         await module.bootstrap()
       } catch (err) {
         console.error(`${err.stack}`.bgRed)
       }
       console.log(`Done trying to load ${name} module!`.bgCyan)
-      return result
     }, {})
     console.log('Finished loading modules!'.bgGreen.cyan)
-    if (!lastParsedCommentID) {
-      const response = await reddit.query(`/r/${subreddit}/comments.json`, true)
-      for (let i = 0; i < 5; i += 1) {
-        lastParsedCommentIDs.push(_.get(response, ['data', 'children', i, 'data', 'name']))
-      }
-      await fs.writeFile(
-        './config/state/state.json', JSON.stringify({ lastParsedCommentIDs }, null, 2)
-      )
-      lastParsedCommentID = lastParsedCommentIDs[0]
-    }
-    checkForDeltas()
+
     checkMessagesforDeltas()
   } catch (err) {
     console.error(err)

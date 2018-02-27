@@ -27,22 +27,32 @@ class CheckUnseenComments extends DeltaBotModule {
 
       const { lastParsedCommentIDs } = this.state
 
-      // if there isn't a state, bootstrap it
+      // if there isn't a state of last parsed comments, go ahead and create it from the https://www.reddit.com/r/changemyview/comments.json call
       if (!lastParsedCommentIDs.length) {
         const comments = await subredditDriver.getNewComments()
         this.state = {
           lastParsedCommentIDs: comments.map(comment => comment.name),
         }
       }
+
+      // sometimes the state is bad because comments are deleted
+      // grab the last valid comment id and start from there
+      // if we don't do this and we accidentally grab a deleted comment,
+      // we would be stuck forever and not be able to parse new comments
       const commentIdToStartBefore = await getLastValidCommentId({
         lastParsedCommentIDs,
         subredditDriver,
       })
+
+      // grab the comments before(newer than) the last parsed comment
+      // we use before/after words because Reddit API uses that
+      // this is ordered from oldest to newest
       const comments = await getNewCommentsBeforeCommentId({
-        atLeastMinutesOld: 10,
         commentId: commentIdToStartBefore,
         subredditDriver,
       })
+
+      // loop through the comments to check for deltas
       for (const comment of comments) {
         if (checkCommentForDelta(comment)) {
           console.log(`There is a delta in comment: ${comment.name}! Check if Delta Bot replied!`)

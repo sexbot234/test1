@@ -2,7 +2,7 @@ const _ = require('lodash')
 
 const {
   checkCommentForDelta,
-  generateDeltaBotCommentFromDeltaComment,
+  generateHiddenParamsFromDeltaComment,
   getDeltaBotReply,
   parseHiddenParams,
   getLastValidCommentId,
@@ -46,24 +46,36 @@ class CheckUnseenComments extends DeltaBotModule {
       for (const comment of comments) {
         if (checkCommentForDelta(comment)) {
           console.log(`There is a delta in comment: ${comment.name}! Check if Delta Bot replied!`)
+
+          // first use snoowrap and grab the comment
           const commentWithReplies = await this.reddit
             .getComment(comment.id)
             .fetch()
+
+          // then fetch ALL of the comment replies
           const commentReplies = await commentWithReplies.replies.fetchAll({})
+
+          // grab the deltabot reply so see if it's been worked on
           const dbReply = getDeltaBotReply(this.botUsername, commentReplies)
           if (!dbReply) await verifyThenAward(comment)
+          // deltabot has already replied
+          // check if the deltabot comment needs to change from when deltabot
+          // originally commented by comparing the hidden params
           else {
             const oldHiddenParems = parseHiddenParams(dbReply.body)
             const oldIssueCount = Object.keys(oldHiddenParems.issues).length
-            const {
-              hiddenParams: newHiddenParams,
-            } = await generateDeltaBotCommentFromDeltaComment({
+
+            // only worry about unsuccessful delta comment
+            if (oldIssueCount === 0) continue
+            const newHiddenParams = await generateHiddenParamsFromDeltaComment({
               botUsername: this.botUsername,
-              subreddit: this.subreddit,
-              reddit: this.legacyRedditApi,
-              comment,
+              reddit: this.reddit,
+              comment: commentWithReplies,
             })
-            if (oldIssueCount > 0 && !_.isEqual(newHiddenParams, oldHiddenParems)) {
+
+            // omit checking hiddenParams.parentUserName because it could have turned into [deleted]
+            // omit checkinghiddenParams.comment because it doesn't matter
+            if (!_.isEqual(newHiddenParams.issues, oldHiddenParems.issues)) {
               await this.reddit
                 .getComment(dbReply.id)
                 .delete()
@@ -74,12 +86,17 @@ class CheckUnseenComments extends DeltaBotModule {
       }
 
       // now update the state
-      if (lastParsedCommentIDs[0] !== (_.get(comments, '[0].name') || commentIdToStartBefore)) {
+      // _.get(_.last(comments), 'name') is the newest comment ID
+      // if no comments are found, use commentIdToStartBefore
+      // commentIdToStartBefore and lastParsedCommentIDs[0] can be different
+      // if a comment was deleted
+      if (lastParsedCommentIDs[0] !== (_.get(_.last(comments), 'name') || commentIdToStartBefore)) {
+        // grab the already parsed comments to use as the new state
         const alreadyParsedComments = await subredditDriver.getNewComments({
           after: _.get(comments, '[0].name') || commentIdToStartBefore,
         })
         this.state = {
-          lastParsedCommentIDs: [_.get(comments, '[0].name') || commentIdToStartBefore].concat(
+          lastParsedCommentIDs: [_.get(_.last(comments), 'name') || commentIdToStartBefore].concat(
             alreadyParsedComments.map(comment => comment.name)
           ),
         }
