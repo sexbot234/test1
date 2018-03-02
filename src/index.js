@@ -907,7 +907,6 @@ const {
     // begin loading modules
     const Modules = require('./modules')
     await _.each(Modules, async (Module, name) => {
-      if (name !== 'checkComment') return
       try {
         console.log(`Trying to load ${name} module!`.bgCyan)
         const module = new Module(reddit)
