@@ -11,7 +11,7 @@ const {
 const { verifyThenAward } = require('./../index')
 const DeltaBotModule = require('./delta-bot-module')
 
-class CheckUnseenComments extends DeltaBotModule {
+class DoubleCheckComments extends DeltaBotModule {
   constructor(legacyRedditApi) {
     super(__filename, legacyRedditApi, { lastParsedCommentIDs: [] })
   }
@@ -111,4 +111,4 @@ class CheckUnseenComments extends DeltaBotModule {
   }
 }
 
-module.exports = CheckUnseenComments
+module.exports = DoubleCheckComments
