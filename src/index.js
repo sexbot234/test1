@@ -901,7 +901,7 @@ const {
   }
 
   try {
-    // await reddit.connect()
+    await reddit.connect()
     console.log('Start loading modules!'.bgGreen.cyan)
 
     // begin loading modules
