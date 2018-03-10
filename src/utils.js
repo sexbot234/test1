@@ -232,6 +232,14 @@ const stringifyObjectToBeHidden = input => (
 const TRUNCATE_AWARD_LENGTH = 200
 const truncateAwardedText = (text) => {
   if (text.length > TRUNCATE_AWARD_LENGTH) {
+    // if the condition below is true, then the [Quote] tag is going to be cut off
+    // and the whole text won't be a link, so we have to make sure it's not cut off
+    // we have to check if it exists which is why the first condition is !== -1
+    // it's only a problem when the quote index is between 194 and 199
+    const lastQuoteIndex = text.lastIndexOf('[Quote]')
+    if (lastQuoteIndex !== -1 && lastQuoteIndex >= 194 && lastQuoteIndex <= 199) {
+      return `${text.substring(0, lastQuoteIndex)}[Quote]...`
+    }
     return `${text.substring(0, TRUNCATE_AWARD_LENGTH)}...`
   }
   return text
