@@ -11,10 +11,10 @@ const checkCommentForDelta = (comment) => {
   // this removes the text that are in quotes
   const removedBodyHTML = (
     body_html
-      .replace(/blockquote&gt;[^]*?\/blockquote&gt;/, '')
-      .replace(/pre&gt;[^]*?\/pre&gt;/, '')
-      .replace(/blockquote>[^]*?\/blockquote>/, '')
-      .replace(/pre>[^]*?\/pre>/, '')
+      .replace(/blockquote&gt;[^]*?\/blockquote&gt;/g, '')
+      .replace(/pre&gt;[^]*?\/pre&gt;/g, '')
+      .replace(/blockquote>[^]*?\/blockquote>/g, '')
+      .replace(/pre>[^]*?\/pre>/g, '')
   )
   // this checks for deltas
   if (

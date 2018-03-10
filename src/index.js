@@ -20,6 +20,7 @@ const {
   stringifyObjectToBeHidden,
   formatAwardedText,
   parseCommentIdFromURL,
+  checkCommentForDelta,
 } = require('./utils');
 
 (async () => {
@@ -860,16 +861,7 @@ const {
               created_utc,
               created,
             }
-            const removedBodyHTML = (
-              body_html
-                .replace(/blockquote&gt;[^]*?\/blockquote&gt;/, '')
-                .replace(/pre&gt;[^]*?\/pre&gt;/, '')
-            )
-            if (
-              !!removedBodyHTML.match(/&amp;#8710;|&#8710;|&#916;|&amp;916;|∆|Δ/i) ||
-              !!removedBodyHTML.match(/!delta/i) ||
-              !!removedBodyHTML.match(/&delta;/i)
-            ) {
+            if (checkCommentForDelta(comment)) {
               await exports.verifyThenAward(comment)
             }
             /* eslint-enable no-await-in-loop */
