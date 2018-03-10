@@ -865,8 +865,11 @@ const {
                 .replace(/blockquote&gt;[^]*?\/blockquote&gt;/, '')
                 .replace(/pre&gt;[^]*?\/pre&gt;/, '')
             )
-            if (!!removedBodyHTML.match(/&amp;#8710;|&#8710;|∆|Δ/) ||
-            !!removedBodyHTML.match(/!delta/i)) {
+            if (
+              !!removedBodyHTML.match(/&amp;#8710;|&#8710;|&#916;|&amp;916;|∆|Δ/i) ||
+              !!removedBodyHTML.match(/!delta/i) ||
+              !!removedBodyHTML.match(/&delta;/i)
+            ) {
               await exports.verifyThenAward(comment)
             }
             /* eslint-enable no-await-in-loop */

@@ -18,7 +18,7 @@ const checkCommentForDelta = (comment) => {
   )
   // this checks for deltas
   if (
-    !!removedBodyHTML.match(/&amp;#8710;|&#8710;|∆|Δ/) ||
+    !!removedBodyHTML.match(/&amp;#8710;|&#8710;|&#916;|&amp;916;|∆|Δ/i) ||
     !!removedBodyHTML.match(/!delta/i) ||
     !!removedBodyHTML.match(/&delta;/i)
   ) {
