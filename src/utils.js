@@ -7,7 +7,8 @@ const escapeUnderscore = string => string.replace(/_/g, '\\_')
 const getCommentAuthor = comment => _.get(comment, 'author.name') || _.get(comment, 'author')
 
 // accepts a string from the "body" key of a reddit comment object
-const removeQuotesFromBody = body => entities.decode(body) // first decode it if it's not already. I think it's safe to do it multiple times
+// first decode it if it's not already. I think it's safe to do it multiple times
+const removeQuotesFromBody = body => entities.decode(body)
   .replace(/>[^\n]*?\n/g, '') // remove the quotes
 
 const checkCommentForDelta = (comment) => {
@@ -74,7 +75,10 @@ const generateHiddenParamsFromDeltaComment = async ({ comment, reddit, botUserna
   if (parentComment.author.name === comment.author.name && bypassOPCheck === false) issues.self = 1
   // if there are no issues yet, then check for comment length
   // checking for this last allows it to be either the issues above or this one
-  if (Object.keys(issues).length === 0 && removeQuotesFromBody(comment.body).length < 50) issues.littleText = 1
+  if (
+    Object.keys(issues).length === 0 &&
+    removeQuotesFromBody(comment.body).length < 50
+  ) issues.littleText = 1
 
   console.log(`Hidden parameters generated for comment ID ${comment.name}`)
   return hiddenParams
