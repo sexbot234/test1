@@ -6,6 +6,10 @@ const escapeUnderscore = string => string.replace(/_/g, '\\_')
 
 const getCommentAuthor = comment => _.get(comment, 'author.name') || _.get(comment, 'author')
 
+// accepts a string from the "body" key of a reddit comment object
+const removeQuotesFromBody = body => entities.decode(body) // first decode it if it's not already. I think it's safe to do it multiple times
+  .replace(/>[^\n]*?\n/g, '') // remove the quotes
+
 const checkCommentForDelta = (comment) => {
   const { body_html } = comment
   // this removes the text that are in quotes
@@ -70,7 +74,7 @@ const generateHiddenParamsFromDeltaComment = async ({ comment, reddit, botUserna
   if (parentComment.author.name === comment.author.name && bypassOPCheck === false) issues.self = 1
   // if there are no issues yet, then check for comment length
   // checking for this last allows it to be either the issues above or this one
-  if (Object.keys(issues).length === 0 && comment.body.length < 50) issues.littleText = 1
+  if (Object.keys(issues).length === 0 && removeQuotesFromBody(comment.body).length < 50) issues.littleText = 1
 
   console.log(`Hidden parameters generated for comment ID ${comment.name}`)
   return hiddenParams
@@ -112,7 +116,7 @@ const generateDeltaBotCommentFromDeltaCommentDEPRECATED = async ({
   if (
     (
       !parentID.match(/^t1_/g) ||
-          parentThing.author === listing.author
+      parentThing.author === listing.author
     ) && bypassOPCheck === false
   ) {
     console.log(
@@ -149,9 +153,9 @@ const generateDeltaBotCommentFromDeltaCommentDEPRECATED = async ({
     } else {
       query.text = `${rejected} ${query.text}`
     }
-  // if there are no issues yet, then check for comment length. checking for this
-  // last allows it to be either the issues above or this one
-  } else if (body.length < 50) {
+    // if there are no issues yet, then check for comment length. checking for this
+    // last allows it to be either the issues above or this one
+  } else if (removeQuotesFromBody(body).length < 50) {
     console.log(`BAILOUT body length, ${body.length}, is shorter than 50`)
     let text = i18n[locale].noAward.littleText
     issues.littleText = 1
