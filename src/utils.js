@@ -215,19 +215,15 @@ const parseHiddenParams = (string) => {
     const hiddenSection = string.match(/DB3PARAMSSTART[^]+DB3PARAMSEND/)[0]
     const stringParams = hiddenSection.slice(
       'DB3PARAMSSTART'.length, -'DB3PARAMSEND'.length
-    ).replace(/&quot;/g, '"').replace(/-paren---/g, ')')
+    ).replace(/&quot;/g, '"').replace(/-paren---/g, ')').replace(/-s---/g, ' ')
     return JSON.parse(entities.decode(stringParams))
   } catch (error) {
     return false
   }
 }
 
-const stringifyObjectToBeHidden = input => (
-  /* eslint-disable no-irregular-whitespace */
-  `[​](HTTP://DB3PARAMSSTART\n${
-    JSON.stringify(input, null, 2).replace(/\)/g, '-paren---')
-  }\nDB3PARAMSEND)`
-)
+/* eslint-disable no-irregular-whitespace */
+const stringifyObjectToBeHidden = input => `[​](HTTP://DB3PARAMSSTART${JSON.stringify(input).replace(/\)/g, '-paren---').replace(/ /g, '-s---')}DB3PARAMSEND)`
 
 const TRUNCATE_AWARD_LENGTH = 200
 const truncateAwardedText = (text) => {
