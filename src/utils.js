@@ -6,6 +6,11 @@ const escapeUnderscore = string => string.replace(/_/g, '\\_')
 
 const getCommentAuthor = comment => _.get(comment, 'author.name') || _.get(comment, 'author')
 
+// accepts a string from the "body" key of a reddit comment object
+// first decode it if it's not already. I think it's safe to do it multiple times
+const removeQuotesFromBody = body => entities.decode(body)
+  .replace(/>[^\n]*?\n/g, '') // remove the quotes
+
 const checkCommentForDelta = (comment) => {
   const { body_html } = comment
   // this removes the text that are in quotes
@@ -69,6 +74,7 @@ const generateHiddenParamsFromDeltaComment = async ({ comment, reddit, botUserna
   if (parentComment.author.name === comment.author.name && bypassOPCheck === false) issues.self = 1
   // if there are no issues yet, then check for comment length
   // checking for this last allows it to be either the issues above or this one
+  
 
   console.log(`Hidden parameters generated for comment ID ${comment.name}`)
   return hiddenParams
@@ -110,7 +116,7 @@ const generateDeltaBotCommentFromDeltaCommentDEPRECATED = async ({
   if (
     (
       !parentID.match(/^t1_/g) ||
-          parentThing.author === listing.author
+      parentThing.author === listing.author
     ) && bypassOPCheck === true
   ) {
     console.log(
@@ -128,7 +134,7 @@ const generateDeltaBotCommentFromDeltaCommentDEPRECATED = async ({
     if (query.text.length) query.text += '\n\n'
     query.text += text
   }
-  if (parentThing.author === author && author.toLowerCase() !== 'test') {
+  if (parentThing.author === author && author.toLowerCase() !== 'mystk') {
     console.log(`BAILOUT parent author, ${parentThing.author} is author, ${author}`)
     const text = i18n[locale].noAward.self
     issues.self = 1
@@ -147,9 +153,9 @@ const generateDeltaBotCommentFromDeltaCommentDEPRECATED = async ({
     } else {
       query.text = `${rejected} ${query.text}`
     }
-  // if there are no issues yet, then check for comment length. checking for this
-  // last allows it to be either the issues above or this one
-  } 
+    // if there are no issues yet, then check for comment length. checking for this
+    // last allows it to be either the issues above or this one
+  }
   issueCount = Object.keys(issues).length
   return { issueCount, parentThing, query, hiddenParams }
 }
@@ -205,19 +211,15 @@ const parseHiddenParams = (string) => {
     const hiddenSection = string.match(/DB3PARAMSSTART[^]+DB3PARAMSEND/)[0]
     const stringParams = hiddenSection.slice(
       'DB3PARAMSSTART'.length, -'DB3PARAMSEND'.length
-    ).replace(/&quot;/g, '"').replace(/-paren---/g, ')')
+    ).replace(/&quot;/g, '"').replace(/-paren---/g, ')').replace(/-s---/g, ' ')
     return JSON.parse(entities.decode(stringParams))
   } catch (error) {
     return false
   }
 }
 
-const stringifyObjectToBeHidden = input => (
-  /* eslint-disable no-irregular-whitespace */
-  `[​](HTTP://DB3PARAMSSTART\n${
-    JSON.stringify(input, null, 2).replace(/\)/g, '-paren---')
-  }\nDB3PARAMSEND)`
-)
+/* eslint-disable no-irregular-whitespace */
+const stringifyObjectToBeHidden = input => `[​](HTTP://DB3PARAMSSTART${JSON.stringify(input).replace(/\)/g, '-paren---').replace(/ /g, '-s---')}DB3PARAMSEND)`
 
 const TRUNCATE_AWARD_LENGTH = 200
 const truncateAwardedText = (text) => {
