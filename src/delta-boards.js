@@ -64,7 +64,7 @@ class DeltaBoards {
     // check if wiki and sidebar need to be updated
     try {
       // grab the newHiddenParams from the wiki page
-      const wikiPage = 'kekboards'
+      const wikiPage = 'Bravoboards'
       const deltaBoardsWikiContent = await getWikiContent({ api, subreddit, wikiPage })
       const oldHiddenParams = parseHiddenParams(deltaBoardsWikiContent)
 
@@ -143,25 +143,25 @@ class DeltaBoards {
 
 _____
 
-# Kekboards
+# Bravoboards
 
 ## Daily
 
-| Rank | Username | Keks |
+| Rank | Username | Bravos |
 | :------: | :------: | :------: |
 ${this.mapDeltaboardDataToTable(newHiddenParams.daily)}
 | |${newHiddenParams.updateTimes.daily}| |
 
 ## Weekly
 
-| Rank | Username | Keks |
+| Rank | Username | Bravos |
 | :------: | :------: | :------: |
 ${this.mapDeltaboardDataToTable(newHiddenParams.weekly)}
 | |${newHiddenParams.updateTimes.weekly}| |
 
 ## Monthly
 
-| Rank | Username | Keks |
+| Rank | Username | Bravos |
 | :------: | :------: | :------: |
 ${this.mapDeltaboardDataToTable(newHiddenParams.monthly)}
 | |${newHiddenParams.updateTimes.monthly}| |
@@ -178,7 +178,7 @@ ${this.mapDeltaboardDataToTable(newHiddenParams.yearly)}
 
     // define update wiki parameters
     const updateWikiQuery = {
-      page: 'kekboards',
+      page: 'Bravoboards',
       reason: 'updated deltaboards',
       content: wikiOutput,
     }
@@ -198,13 +198,13 @@ ${this.mapDeltaboardDataToTable(newHiddenParams.yearly)}
 
     // create the string that will go into the sidebar
     const newTableToPutIn = `
-###### Monthly Kekboard
+###### Monthly Bravoboard
 
-| Rank | Username | Keks |
+| Rank | Username | Bravos |
 | :------: | :------: | :------: |
 ${this.mapDeltaboardDataToTable(newHiddenParams.monthly)}
 | |${parsedDate}| |
-| |[More Kekboards](/r/${subreddit}/wiki/kekboards)| |`
+| |[More Bravoboards](/r/${subreddit}/wiki/Bravoboards)| |`
     let textToReplace
     try {
       textToReplace = sideBar.match(
