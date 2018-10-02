@@ -18,9 +18,8 @@ const checkCommentForDelta = (comment) => {
   )
   // this checks for deltas
   if (
-    !!removedBodyHTML.match(/&amp;#8710;|&#8710;|&#916;|&amp;916;|∆|Δ/i) ||
-    !!removedBodyHTML.match(/!delta/i) ||
-    !!removedBodyHTML.match(/&delta;/i)
+    !!removedBodyHTML.match(/!topkek/i) ||
+    !!removedBodyHTML.match(/&topkek;/i)
   ) {
     return true
   }
@@ -62,7 +61,7 @@ const generateHiddenParamsFromDeltaComment = async ({ comment, reddit, botUserna
 
   // if the author of the comment being deltaed is OP/submission author
   // bypassOPCheck is used for debugging
-  if (parentComment.author.name === submission.author.name && bypassOPCheck === false) issues.op = 1
+  if (parentComment.author.name === submission.author.name && bypassOPCheck === true) issues.op = 1
   // if the comment being deltaed is the bot
   if (parentComment.author.name === botUsername) issues.db3 = 1
   // if the comment being deltaed and the delta comment author are the same
@@ -70,7 +69,6 @@ const generateHiddenParamsFromDeltaComment = async ({ comment, reddit, botUserna
   if (parentComment.author.name === comment.author.name && bypassOPCheck === false) issues.self = 1
   // if there are no issues yet, then check for comment length
   // checking for this last allows it to be either the issues above or this one
-  if (Object.keys(issues).length === 0 && comment.body.length < 50) issues.littleText = 1
 
   console.log(`Hidden parameters generated for comment ID ${comment.name}`)
   return hiddenParams
@@ -113,7 +111,7 @@ const generateDeltaBotCommentFromDeltaCommentDEPRECATED = async ({
     (
       !parentID.match(/^t1_/g) ||
           parentThing.author === listing.author
-    ) && bypassOPCheck === false
+    ) && bypassOPCheck === true
   ) {
     console.log(
       `BAILOUT parent author, ${parentThing.author} is listing author, ${listing.author}`
@@ -130,7 +128,7 @@ const generateDeltaBotCommentFromDeltaCommentDEPRECATED = async ({
     if (query.text.length) query.text += '\n\n'
     query.text += text
   }
-  if (parentThing.author === author && author.toLowerCase() !== 'mystk') {
+  if (parentThing.author === author && author.toLowerCase() !== 'test') {
     console.log(`BAILOUT parent author, ${parentThing.author} is author, ${author}`)
     const text = i18n[locale].noAward.self
     issues.self = 1
@@ -151,15 +149,7 @@ const generateDeltaBotCommentFromDeltaCommentDEPRECATED = async ({
     }
   // if there are no issues yet, then check for comment length. checking for this
   // last allows it to be either the issues above or this one
-  } else if (body.length < 50) {
-    console.log(`BAILOUT body length, ${body.length}, is shorter than 50`)
-    let text = i18n[locale].noAward.littleText
-    issues.littleText = 1
-    text = text.replace(/PARENTUSERNAME/g, parentThing.author)
-    if (query.text.length) query.text += '\n\n'
-    query.text += text
-    query.text = `${rejected} ${query.text}`
-  }
+  } 
   issueCount = Object.keys(issues).length
   return { issueCount, parentThing, query, hiddenParams }
 }
