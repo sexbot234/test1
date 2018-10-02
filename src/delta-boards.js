@@ -64,7 +64,7 @@ class DeltaBoards {
     // check if wiki and sidebar need to be updated
     try {
       // grab the newHiddenParams from the wiki page
-      const wikiPage = 'deltaboards'
+      const wikiPage = 'Kekboards'
       const deltaBoardsWikiContent = await getWikiContent({ api, subreddit, wikiPage })
       const oldHiddenParams = parseHiddenParams(deltaBoardsWikiContent)
 
@@ -143,25 +143,25 @@ class DeltaBoards {
 
 _____
 
-# Deltaboards
+# KEKboards
 
 ## Daily
 
-| Rank | Username | Deltas |
+| Rank | Username | Keks |
 | :------: | :------: | :------: |
 ${this.mapDeltaboardDataToTable(newHiddenParams.daily)}
 | |${newHiddenParams.updateTimes.daily}| |
 
 ## Weekly
 
-| Rank | Username | Deltas |
+| Rank | Username | Keks |
 | :------: | :------: | :------: |
 ${this.mapDeltaboardDataToTable(newHiddenParams.weekly)}
 | |${newHiddenParams.updateTimes.weekly}| |
 
 ## Monthly
 
-| Rank | Username | Deltas |
+| Rank | Username | Keks |
 | :------: | :------: | :------: |
 ${this.mapDeltaboardDataToTable(newHiddenParams.monthly)}
 | |${newHiddenParams.updateTimes.monthly}| |
@@ -198,13 +198,13 @@ ${this.mapDeltaboardDataToTable(newHiddenParams.yearly)}
 
     // create the string that will go into the sidebar
     const newTableToPutIn = `
-###### Monthly Deltaboard
+###### Monthly Kekboard
 
-| Rank | Username | Deltas |
+| Rank | Username | Keks |
 | :------: | :------: | :------: |
 ${this.mapDeltaboardDataToTable(newHiddenParams.monthly)}
 | |${parsedDate}| |
-| |[More Deltaboards](/r/${subreddit}/wiki/deltaboards)| |`
+| |[More Kekboards](/r/${subreddit}/wiki/Kekboards)| |`
     let textToReplace
     try {
       textToReplace = sideBar.match(
@@ -535,7 +535,7 @@ ${this.mapDeltaboardDataToTable(newHiddenParams.monthly)}
     const { api, subreddit } = this
 
     // grab the current hidden parameters from the wiki page
-    const wikiPage = 'deltaboards'
+    const wikiPage = 'Kekboards'
     const deltaBoardsWikiContent = await getWikiContent({ api, subreddit, wikiPage })
     const hiddenParams = parseHiddenParams(deltaBoardsWikiContent)
 
@@ -549,4 +549,4 @@ ${this.mapDeltaboardDataToTable(newHiddenParams.monthly)}
   }
 }
 
-module.exports = DeltaBoards
+module.exports = KekBoards
