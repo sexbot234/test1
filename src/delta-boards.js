@@ -549,4 +549,4 @@ ${this.mapDeltaboardDataToTable(newHiddenParams.monthly)}
   }
 }
 
-module.exports = KekBoards
+module.exports = DeltaBoards
