@@ -4,7 +4,7 @@
   "description": "The third rewrite of delta bot",
   "main": "dist/index.js",
   "scripts": {
-    "start": "nodemon ./src/index.js -x node -w ./i18n -w ./src -- --inspect --enable-delta-log",
+    "start": "node ./src/index.js -x node -w ./i18n -w ./src -- --inspect --enable-delta-log",
     "startProduction": "forever cleanlogs && forever start --uid \"production\" -o out.log -e err.log ./src/index.js --enable-delta-log",
     "start-debug": "nodemon ./src/index.js -x node -w ./i18n -w ./src -- --bypass-op-check --enable-delta-log",
     "start-debug-inspector": "node-debug ./src/index.js --bypass-op-check --enable-delta-log",
