@@ -278,7 +278,7 @@ const {
   const updateFlair = async ({ name, flairCount }) => {
     const flairQuery = {
       name,
-      text: `${flairCount} Bravos`,
+      text: `${flairCount}ß`,
     }
     const response = await reddit.query(
       { URL: `/r/${subreddit}/api/flair?${stringify(flairQuery)}`, method: 'POST' }
