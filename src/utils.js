@@ -23,8 +23,8 @@ const checkCommentForDelta = (comment) => {
   )
   // this checks for deltas
   if (
-    !!removedBodyHTML.match(/!topkek/i) ||
-    !!removedBodyHTML.match(/&topkek;/i)
+    !!removedBodyHTML.match(/!bravo/i) ||
+    !!removedBodyHTML.match(/&bravo;/i)
   ) {
     return true
   }
