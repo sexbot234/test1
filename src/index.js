@@ -238,7 +238,7 @@ const {
     const deltaCountReceived = hiddenParams.deltas.length
     const deltaCountGiven = hiddenParams.deltasGiven.length
     // eslint-disable-next-line
-    let newContent = `[​](HTTP://DB3PARAMSSTART\n${JSON.stringify(hiddenParams, null, 2)}\nDB3PARAMSEND)\r\n\r\n#Delta History for u/${userToModify}\r\n\r\n##Deltas Received\r\n\r\n/u/${userToModify} has received ${deltaCountReceived} delta${deltaCountReceived === 1 ? '' : 's'}:\r\n\r\n| Date | Submission | Delta Comment | Awarded By |\r\n| :------: | :------: | :------: | :------: |\r\n`
+    let newContent = `${stringifyObjectToBeHidden(hiddenParams)}\r\n\r\n#kek History for u/${userToModify}\r\n\r\n##keks Received\r\n\r\n/u/${userToModify} has received ${deltaCountReceived} kek${deltaCountReceived === 1 ? '' : 's'}:\r\n\r\n| Date | Submission | kek Comment | Awarded By |\r\n| :------: | :------: | :------: | :------: |\r\n`
     _.forEachRight(hiddenParams.deltas, (col) => {
       const { b, dc, t, ab, uu } = col
       const date = new Date(uu * 1000)
@@ -250,7 +250,7 @@ const {
       )
       newContent += newRow
     })
-    newContent += `\r\n\r\n##Deltas Given\r\n\r\n/u/${userToModify} has given ${deltaCountGiven} delta${deltaCountGiven === 1 ? '' : 's'}:\r\n\r\n| Date | Submission | Delta Comment | Awarded To |\r\n| :------: | :------: | :------: | :------: |\r\n`
+    newContent += `\r\n\r\n##Keks Given\r\n\r\n/u/${userToModify} has given ${deltaCountGiven} delta${deltaCountGiven === 1 ? '' : 's'}:\r\n\r\n| Date | Submission | kek Comment | Awarded To |\r\n| :------: | :------: | :------: | :------: |\r\n`
     _.forEachRight(hiddenParams.deltasGiven, (col) => {
       const { b, dc, t, ab, uu } = col
       const date = new Date(uu * 1000)
@@ -278,7 +278,7 @@ const {
   const updateFlair = async ({ name, flairCount }) => {
     const flairQuery = {
       name,
-      text: `${flairCount}∆`,
+      text: `${flairCount} Keks`,
     }
     const response = await reddit.query(
       { URL: `/r/${subreddit}/api/flair?${stringify(flairQuery)}`, method: 'POST' }
@@ -631,8 +631,7 @@ const {
         await updateFlair({ name: parentThing.author, flairCount })
         await sendIntroductoryMessage({ username: parentThing.author, flairCount })
       }
-      // eslint-disable-next-line
-      query.text += `${i18n[locale].global}\n[​](HTTP://DB3PARAMSSTART\n${JSON.stringify(hiddenParams, null, 2)}\nDB3PARAMSEND)`
+      query.text += `${i18n[locale].global}\n${stringifyObjectToBeHidden(hiddenParams)}`
       await makeComment({ content: query, sticky: false })
       if (issueCount === 0 && deltaLogEnabled) {
         const deltaLogPost = await findOrMakeDeltaLogPost(linkID, comment, parentThing)
