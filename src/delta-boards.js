@@ -64,7 +64,7 @@ class DeltaBoards {
     // check if wiki and sidebar need to be updated
     try {
       // grab the newHiddenParams from the wiki page
-      const wikiPage = 'Kekboards'
+      const wikiPage = 'kekboards'
       const deltaBoardsWikiContent = await getWikiContent({ api, subreddit, wikiPage })
       const oldHiddenParams = parseHiddenParams(deltaBoardsWikiContent)
 
@@ -143,7 +143,7 @@ class DeltaBoards {
 
 _____
 
-# KEKboards
+# Kekboards
 
 ## Daily
 
@@ -178,7 +178,7 @@ ${this.mapDeltaboardDataToTable(newHiddenParams.yearly)}
 
     // define update wiki parameters
     const updateWikiQuery = {
-      page: 'deltaboards',
+      page: 'kekboards',
       reason: 'updated deltaboards',
       content: wikiOutput,
     }
@@ -204,7 +204,7 @@ ${this.mapDeltaboardDataToTable(newHiddenParams.yearly)}
 | :------: | :------: | :------: |
 ${this.mapDeltaboardDataToTable(newHiddenParams.monthly)}
 | |${parsedDate}| |
-| |[More Kekboards](/r/${subreddit}/wiki/Kekboards)| |`
+| |[More Kekboards](/r/${subreddit}/wiki/kekboards)| |`
     let textToReplace
     try {
       textToReplace = sideBar.match(
@@ -535,7 +535,7 @@ ${this.mapDeltaboardDataToTable(newHiddenParams.monthly)}
     const { api, subreddit } = this
 
     // grab the current hidden parameters from the wiki page
-    const wikiPage = 'Kekboards'
+    const wikiPage = 'deltaboards'
     const deltaBoardsWikiContent = await getWikiContent({ api, subreddit, wikiPage })
     const hiddenParams = parseHiddenParams(deltaBoardsWikiContent)
 
